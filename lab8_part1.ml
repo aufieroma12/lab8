@@ -96,7 +96,7 @@ module MakeInterval (Endpoint : ORDERED_TYPE) =
        `high` inclusive. If `low` is greater than `high`, then the
        interval is empty. *)
     let create (low : Endpoint.t) (high : Endpoint.t) : interval =
-      if low > high then Empty
+      if Endpoint.compare low high > 0 then Empty
     else Interval (low, high)
 
     (* is_empty intvl -- Returns true if and only if `intvl` is
@@ -109,14 +109,14 @@ module MakeInterval (Endpoint : ORDERED_TYPE) =
     let contains (intvl : interval) (x : Endpoint.t) : bool =
       match intvl with
       | Empty -> false
-      | Interval (low, high) -> x >= low && x <= high
+      | Interval (low, high) -> Endpoint.compare x low >= 0
+                                && Endpoint.compare x high <= 0
 
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
       match intvl1, intvl2 with
-      | Empty, Empty -> Empty
-      | Empty, _ -> Empty
+      | Empty, _
       | _, Empty -> Empty
       | Interval (low1, high1), Interval (low2, high2) -> create (max low1 low2) (min high1 high2)
     end ;;
