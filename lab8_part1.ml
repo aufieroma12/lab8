@@ -201,8 +201,8 @@ module MakeSafeInterval (Endpoint : ORDERED_TYPE) : INTERVAL =
     (* create low high -- Returns a new interval covering `low` to
        `high` inclusive. If `low` is greater than `high`, then the
        interval is empty. *)
-    let create (low : endpoint) (high : endpoint) : interval =
-      if low > high then Empty
+   let create (low : endpoint) (high : endpoint) : interval =
+      if Endpoint.compare low high > 0 then Empty
     else Interval (low, high)
 
     (* is_empty intvl -- Returns true if and only if `intvl` is
@@ -215,18 +215,17 @@ module MakeSafeInterval (Endpoint : ORDERED_TYPE) : INTERVAL =
     let contains (intvl : interval) (x : endpoint) : bool =
       match intvl with
       | Empty -> false
-      | Interval (low, high) -> x >= low && x <= high
+      | Interval (low, high) -> Endpoint.compare x low >= 0
+                                && Endpoint.compare x high <= 0
 
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
       match intvl1, intvl2 with
-      | Empty, Empty -> Empty
-      | Empty, _ -> Empty
+      | Empty, _
       | _, Empty -> Empty
       | Interval (low1, high1), Interval (low2, high2) -> create (max low1 low2) (min high1 high2)
-    (* ... complete the module implementation here ... *)
-  end ;;
+    end ;;
 
 (* We have successfully made our returned module abstract, but believe
 it or not, it is now too abstract. In fact, we have not exposed the
@@ -303,7 +302,7 @@ module MakeBestInterval (Endpoint : ORDERED_TYPE) :
        `high` inclusive. If `low` is greater than `high`, then the
        interval is empty. *)
     let create (low : endpoint) (high : endpoint) : interval =
-      if low > high then Empty
+      if Endpoint.compare low high > 0 then Empty
     else Interval (low, high)
 
     (* is_empty intvl -- Returns true if and only if `intvl` is
@@ -316,18 +315,17 @@ module MakeBestInterval (Endpoint : ORDERED_TYPE) :
     let contains (intvl : interval) (x : endpoint) : bool =
       match intvl with
       | Empty -> false
-      | Interval (low, high) -> x >= low && x <= high
+      | Interval (low, high) -> Endpoint.compare x low >= 0
+                                && Endpoint.compare x high <= 0
 
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
       match intvl1, intvl2 with
-      | Empty, Empty -> Empty
-      | Empty, _ -> Empty
+      | Empty, _
       | _, Empty -> Empty
       | Interval (low1, high1), Interval (low2, high2) -> create (max low1 low2) (min high1 high2)
-    (* ... complete the module implementation here ... *)
-  end ;;
+    end ;;
 (* We now have a fully functioning functor that can create interval
 modules of whatever type we want, with the appropriate abstraction
 level.
