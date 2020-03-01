@@ -97,12 +97,14 @@ module MakeInterval (Endpoint : ORDERED_TYPE) =
        interval is empty. *)
     let create (low : Endpoint.t) (high : Endpoint.t) : interval =
       if Endpoint.compare low high > 0 then Empty
-    else Interval (low, high)
+      else Interval (low, high)
 
     (* is_empty intvl -- Returns true if and only if `intvl` is
        empty *)
     let is_empty (intvl : interval) : bool =
-      intvl = Empty
+      match intvl with
+      | Empty -> true
+      | Interval _ -> false
 
     (* contains intvl x -- Returns true if and only if the value `x`
        is contained within `intvl` *)
@@ -115,10 +117,13 @@ module MakeInterval (Endpoint : ORDERED_TYPE) =
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
+      let ordered x y = if Endpoint.compare x y <= 0 then x, y else y, x in
       match intvl1, intvl2 with
       | Empty, _
       | _, Empty -> Empty
-      | Interval (low1, high1), Interval (low2, high2) -> create (max low1 low2) (min high1 high2)
+      | Interval (low1, high1), Interval (low2, high2) -> 
+         let (_, low), (high, _)  = ordered low1 low2, ordered high1 high2 in
+         create low high
     end ;;
 
 (*......................................................................
@@ -221,10 +226,13 @@ module MakeSafeInterval (Endpoint : ORDERED_TYPE) : INTERVAL =
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
+      let ordered x y = if Endpoint.compare x y <= 0 then x, y else y, x in
       match intvl1, intvl2 with
       | Empty, _
       | _, Empty -> Empty
-      | Interval (low1, high1), Interval (low2, high2) -> create (max low1 low2) (min high1 high2)
+      | Interval (low1, high1), Interval (low2, high2) -> 
+         let (_, low), (high, _)  = ordered low1 low2, ordered high1 high2 in
+         create low high
     end ;;
 
 (* We have successfully made our returned module abstract, but believe
@@ -321,10 +329,13 @@ module MakeBestInterval (Endpoint : ORDERED_TYPE) :
     (* intersect intvl1 intvl2 -- Returns the intersection of `intvl1`
        and `intvl2` *)
     let intersect (intvl1 : interval) (intvl2 : interval) : interval =
+     let ordered x y = if Endpoint.compare x y <= 0 then x, y else y, x in
       match intvl1, intvl2 with
       | Empty, _
       | _, Empty -> Empty
-      | Interval (low1, high1), Interval (low2, high2) -> create (max low1 low2) (min high1 high2)
+      | Interval (low1, high1), Interval (low2, high2) -> 
+         let (_, low), (high, _)  = ordered low1 low2, ordered high1 high2 in
+         create low high
     end ;;
 (* We now have a fully functioning functor that can create interval
 modules of whatever type we want, with the appropriate abstraction
